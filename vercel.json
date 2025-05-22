@@ -1,7 +1,6 @@
 {
-  "name": "qr-scanner-web",
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
       "src": "/(.*)",
       "dest": "/index.html"
