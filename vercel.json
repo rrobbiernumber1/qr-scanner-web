@@ -1,20 +1,20 @@
 {
-  "version": 2,
-  "rewrites": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
+    "version": 2,
+    "rewrites": [
         {
-          "key": "X-Frame-Options",
-          "value": "DENY"
+        "source": "/(.*)",
+        "destination": "/index.html"
         }
-      ]
-    }
-  ]
+    ],
+    "headers": [
+        {
+        "source": "/(.*)",
+        "headers": [
+            {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+            }
+        ]
+        }
+    ]
 }
