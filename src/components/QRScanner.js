@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQRScanner } from '../hooks/useQRScanner';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { encryptData } from '../utils/crypto';
 import { sendCheckIn } from '../services/api';
 import ScanGuide from './ScanGuide';
@@ -10,12 +11,20 @@ function QRScanner() {
   const [checkInData, setCheckInData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
+  // 인터넷 연결 상태 추가
+  const isOnline = useOnlineStatus();
+  
   // QR 스캔 성공 핸들러
   const handleScanSuccess = async (data) => {
     setScanResult(data);
     setIsProcessing(true);
     
     try {
+      // 인터넷 연결 상태 확인
+      if (!isOnline) {
+        throw new Error('인터넷 연결이 필요합니다. 네트워크 상태를 확인해주세요.');
+      }
+      
       // 1. 데이터 암호화
       const encryptedData = encryptData(data);
       console.log('암호화된 데이터:', encryptedData);
@@ -37,7 +46,8 @@ function QRScanner() {
       setCheckInData({
         success: false,
         error: error.message || '체크인 처리 중 오류가 발생했습니다.',
-        scanData: data
+        scanData: data,
+        details: !isOnline ? '네트워크 연결을 확인하고 다시 시도해주세요.' : null
       });
     } finally {
       setIsProcessing(false);
@@ -107,15 +117,15 @@ function QRScanner() {
         <div style={styles.controls}>
           <button 
             onClick={isScanning ? stopScanning : startScanning}
-            disabled={!hasCamera || cameraPermission === 'denied'}
+            disabled={!hasCamera || cameraPermission === 'denied' || !isOnline}
             style={{
               ...styles.actionButton,
-              backgroundColor: !hasCamera || cameraPermission === 'denied' 
+              backgroundColor: !hasCamera || cameraPermission === 'denied' || !isOnline
                 ? '#ccc' 
                 : isScanning 
                   ? '#dc3545' 
                   : '#28a745',
-              cursor: !hasCamera || cameraPermission === 'denied' 
+              cursor: !hasCamera || cameraPermission === 'denied' || !isOnline
                 ? 'not-allowed' 
                 : 'pointer'
             }}
@@ -123,22 +133,32 @@ function QRScanner() {
             {!hasCamera 
               ? '📵 카메라 없음' 
               : cameraPermission === 'denied' 
-                ? '🚫 권한 필요' 
-                : isScanning 
-                  ? '⏸️ 스캔 중지' 
-                  : '📷 스캔 시작'
+                ? '🚫 카메라 권한 필요' 
+                : !isOnline
+                  ? '🌐 인터넷 연결 필요'
+                  : isScanning 
+                    ? '⏸️ 스캔 중지' 
+                    : '📷 스캔 시작'
             }
           </button>
         </div>
       )}
 
-      {/* 상태 정보 */}
+      {/* 상태 정보 - 인터넷 연결 상태 추가 */}
       <div style={styles.statusBar}>
         <span style={styles.statusText}>
           📱 {navigator.userAgent.includes('Mobile') ? '모바일' : '데스크톱'} | 
           📹 카메라: {hasCamera ? '지원' : '미지원'} | 
-          🔐 권한: {cameraPermission}
+          🔐 카메라 권한: {cameraPermission} | 
+          🌐 인터넷: {isOnline ? '연결됨' : '연결안됨'}
         </span>
+        
+        {/* 오프라인 경고 메시지 */}
+        {!isOnline && (
+          <div style={styles.offlineWarning}>
+            ⚠️ 인터넷 연결이 끊어졌습니다. 체크인을 위해 네트워크 연결을 확인해주세요.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -238,10 +258,21 @@ const styles = {
     borderRadius: '20px',
     padding: '10px 20px',
     marginTop: 'auto',
+    textAlign: 'center',
   },
   statusText: {
     fontSize: '12px',
     color: '#666',
+  },
+  offlineWarning: {
+    backgroundColor: '#ff6b6b',
+    color: 'white',
+    padding: '8px 16px',
+    borderRadius: '15px',
+    marginTop: '10px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    textAlign: 'center',
   }
 };
 
