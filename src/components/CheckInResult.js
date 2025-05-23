@@ -1,8 +1,10 @@
 import React from 'react';
+import { styles } from './CheckInResult.styles';
+import { UI_MESSAGES } from '../constants';
 
 function CheckInResult({ checkInData, onReset }) {
   const isSuccess = checkInData?.success;
-  const message = checkInData?.message || checkInData?.error || '알 수 없는 오류가 발생했습니다.';
+  const message = checkInData?.message || checkInData?.error || UI_MESSAGES.ERROR.UNKNOWN_ERROR;
   
   // 체크인 시간 포맷팅
   const formatCheckInTime = (timeString) => {
@@ -55,74 +57,5 @@ function CheckInResult({ checkInData, onReset }) {
     </div>
   );
 }
-
-const styles = {
-  resultContainer: {
-    textAlign: 'center',
-    color: 'white',
-    padding: '40px 20px',
-    width: '100%',
-  },
-  successIcon: {
-    fontSize: '48px',
-    marginBottom: '20px',
-  },
-  errorIcon: {
-    fontSize: '48px',
-    marginBottom: '20px',
-  },
-  successTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    color: '#00ff00',
-  },
-  errorTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    color: '#ff6b6b',
-  },
-  resultBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
-    padding: '20px',
-    marginBottom: '20px',
-  },
-  resultText: {
-    fontSize: '16px',
-    lineHeight: '1.5',
-    marginBottom: '15px',
-  },
-  infoText: {
-    fontSize: '14px',
-    color: '#ddd',
-    marginBottom: '10px',
-    textAlign: 'left',
-  },
-  dataText: {
-    fontSize: '12px',
-    color: '#aaa',
-    wordBreak: 'break-all',
-  },
-  errorDetails: {
-    fontSize: '13px',
-    color: '#ff9999',
-    marginTop: '10px',
-    fontStyle: 'italic',
-  },
-  resetButton: {
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '25px',
-    padding: '15px 30px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    boxShadow: '0 4px 15px rgba(0, 123, 255, 0.3)',
-    transition: 'all 0.3s ease',
-  },
-};
 
 export default CheckInResult;

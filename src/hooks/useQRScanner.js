@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import QrScanner from 'qr-scanner';
+import { CAMERA_CONFIG, UI_MESSAGES } from '../constants';
 
 export const useQRScanner = (onScanSuccess) => {
   const videoRef = useRef(null);
@@ -25,7 +26,7 @@ export const useQRScanner = (onScanSuccess) => {
       setHasCamera(cameraSupported);
       
       if (!cameraSupported) {
-        setError('이 기기에서는 카메라를 사용할 수 없습니다.');
+        setError(UI_MESSAGES.ERROR.NO_CAMERA_DEVICE);
         return;
       }
 
@@ -40,16 +41,16 @@ export const useQRScanner = (onScanSuccess) => {
             onDecodeError: () => {
               // 디코드 에러는 정상적인 상황이므로 무시
             },
-            preferredCamera: 'environment',
-            highlightScanRegion: true,
-            highlightCodeOutline: true,
-            maxScansPerSecond: 5,
+            preferredCamera: CAMERA_CONFIG.PREFERRED_CAMERA,
+            highlightScanRegion: CAMERA_CONFIG.HIGHLIGHT_SCAN_REGION,
+            highlightCodeOutline: CAMERA_CONFIG.HIGHLIGHT_CODE_OUTLINE,
+            maxScansPerSecond: CAMERA_CONFIG.MAX_SCANS_PER_SECOND,
           }
         );
       }
     } catch (err) {
       console.error('Camera initialization error:', err);
-      setError(`카메라 초기화 실패: ${err.message}`);
+      setError(`${UI_MESSAGES.ERROR.CAMERA_INIT_FAIL} ${err.message}`);
     }
   };
 
@@ -58,7 +59,7 @@ export const useQRScanner = (onScanSuccess) => {
       setError('');
       
       if (!hasCamera || !qrScannerRef.current) {
-        setError('카메라를 사용할 수 없습니다.');
+        setError(UI_MESSAGES.ERROR.CAMERA_NOT_AVAILABLE);
         return;
       }
 
@@ -70,12 +71,20 @@ export const useQRScanner = (onScanSuccess) => {
       console.error('Camera start error:', err);
       
       if (err.name === 'NotAllowedError') {
-        setError('카메라 권한이 거부되었습니다. 브라우저에서 카메라 권한을 허용해주세요.');
+        // HTTPS 관련 에러인지 확인
+        if (err.message && err.message.toLowerCase().includes('https')) {
+          setError(UI_MESSAGES.ERROR.HTTPS_REQUIRED);
+        } else {
+          setError(UI_MESSAGES.ERROR.PERMISSION_DENIED);
+        }
         setCameraPermission('denied');
       } else if (err.name === 'NotFoundError') {
-        setError('카메라를 찾을 수 없습니다.');
+        setError(UI_MESSAGES.ERROR.CAMERA_NOT_FOUND);
+      } else if (err.message && err.message.toLowerCase().includes('https')) {
+        setError(UI_MESSAGES.ERROR.HTTPS_REQUIRED);
+        setCameraPermission('denied');
       } else {
-        setError(`카메라 접근 실패: ${err.message}`);
+        setError(`${UI_MESSAGES.ERROR.CAMERA_ACCESS_FAIL} ${err.message}`);
       }
     }
   };
