@@ -49,7 +49,7 @@ export const styles = {
   
   cameraContainer: {
     position: 'relative',
-    width: '100%',
+    width: '90%',
     maxWidth: SIZES.CONTAINER.MAX_WIDTH,
     backgroundColor: COLORS.BLACK,
     borderRadius: SIZES.BORDER_RADIUS.LARGE,
